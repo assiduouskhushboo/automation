@@ -1,0 +1,123 @@
+import os
+
+import pandas as pd
+
+from pandas import ExcelWriter
+
+import numpy as np
+
+from fnmatch import fnmatch
+
+
+
+def dcfp_data_counts(date = None): 
+
+    path = r'F:/ProjectData/MERCHANT_ALERT/email_files/'
+
+    df = pd.DataFrame()
+
+    if date is not None:
+
+        path = r'F:/ProjectData/MERCHANT_ALERT/email_files/date/'
+
+        files = os.listdir(path)
+
+        s = pd.Series(files)
+
+        df = pd.DataFrame()
+
+        s1 = s[s.str.contains('DCFP') == True]
+
+        df['Location'] = np.where(s1.str.contains('CHN'), 'CHN', 'GGN')
+
+        i=0
+
+        df['Record Count'] = ""
+
+        df['Prod Date'] = ""
+
+        df = df.copy()
+
+        selected_files = [s for s in files if "DCFP" in s]
+
+        for f in selected_files:
+
+            a = pd.read_excel(os.path.join(path,f))
+
+            df['Prod Date'][i] = a['Date'].iloc[0]
+
+            df['Record Count'][i] = len(a.axes[0])
+
+            i = i+1
+
+        writer = ExcelWriter('DCFP_data_in_db_counts.xlsx')
+
+        df.to_excel(writer,'DCFPdata_in_db_cnts',index = False)
+
+        writer.save()
+
+     else:
+
+         path = r'F:/Khushboo/MERCHANT_ALERTS/email files/'
+
+         root = 'F:/Khushboo/MERCHANT_ALERTS/email files/'
+
+         pattern = "*.xlsx"
+
+         f = []
+
+         d = []
+
+                    
+
+         for path,subdirs,filenames in os.walk(root):
+
+             for name in filenames:
+
+                 if fnmatch(name, pattern):
+
+                    file = os.path.abspath(os.path.join(path, name))
+
+                    f.append(file)
+
+                                            
+
+         s = pd.Series(f)
+
+         df = pd.DataFrame()
+
+         s1 = s[s.str.contains('DCFP') == True]
+
+         df['Location'] = np.where(s1.str.contains('CHN'), 'CHN', 'GGN')
+
+         i=0
+
+         df['Record Count'] = ""
+
+         df['Prod Date'] = ""
+
+         df = df.copy()
+
+         selected_files = [s for s in f if "DCFP" in s]
+
+         for g in selected_files:
+
+             a = pd.read_excel(g)
+
+             df['Prod Date'][i] = a['Date'].iloc[0]
+
+             df['Record Count'][i] = len(a.axes[0])
+
+             i = i+1  
+
+            
+
+        writer = ExcelWriter('DCFP_data_in_db_counts.xlsx')
+
+        df.to_excel(writer,'DCFPdata_in_db_cnts',index = False)
+
+        writer.save()
+
+            
+
+    return df
