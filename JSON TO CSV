@@ -1,0 +1,163 @@
+from fnmatch import fnmatch
+
+import json
+
+import pandas as pd
+
+import os
+
+import datetime
+
+
+
+def df_column_uniquify(df):
+
+    df_columns = df.columns
+
+    new_columns = []
+
+    for item in df_columns:
+
+        counter = 0
+
+        newitem = item
+
+        while newitem in new_columns:
+
+            counter += 1
+
+            newitem = "{}_{}".format(item, counter)
+
+        new_columns.append(newitem)
+
+    df.columns = new_columns
+
+    return df
+
+
+
+idm_data = pd.DataFrame()
+
+
+
+os.chdir("F:/Khushboo/IDM_Testing/")
+
+rootdir = r'F:/Khushboo/IDM_Testing/'
+
+json_data = list()
+
+dir_list = list()
+
+for path, dirs, files in os.walk(rootdir):
+
+    for name in files:
+
+        if name.endswith((".json")):
+
+            json_data.append(name)
+
+            dir_list.append(os.path.join(path, name))
+
+           
+
+
+
+#json_data1 = [i.split('.json', 1)[0] for i in json_data]
+
+required_json = ["1-12988","1-17248","1-17249","1-17250"]
+
+required_json1 = [s + '.json' for s in required_json]
+
+
+
+
+
+
+
+common_files = [i for i in required_json1 if i in json_data]
+
+
+
+start_time = datetime.datetime.today()
+
+
+
+i=0
+
+for f in common_files:
+
+    s3 = pd.Series(dir_list)
+
+    s1 = s3[s3.str.contains(f) == True]
+
+    s1 =  s1.str.replace("\\","/")
+
+    with open(s1[i]) as datafile:  
+
+                 try:   
+
+                     x = json.load(datafile)
+
+                     s = pd.Series(f)                    
+
+                     #idm = x['providers']['idmResponse']
+
+                     idm = x
+
+                     idm_edna = idm['response']['ednaScoreCard']
+
+                     #For sc
+
+                     sc = idm_edna['sc']
+
+                     sc_df = pd.DataFrame.from_dict(sc,orient='columns')
+
+                     sc_df = sc_df[['test','details']]
+
+                     sc_df = sc_df.set_index('test').T
+
+                     #For etr
+
+                     etr = idm_edna['etr']
+
+                     etr_df = pd.DataFrame.from_dict(etr,orient='columns')
+
+                     etr_df = etr_df[['test','details']]
+
+                     etr_df = etr_df.set_index('test').T
+
+                     df = pd.concat([sc_df.reset_index(drop=True), etr_df.reset_index(drop=True)], axis=1)
+
+                     df = df_column_uniquify(df)
+
+                     df.columns = df.columns.str.replace(":", "_")
+
+                     df.columns = map(str.upper, df.columns)
+
+                     df = df.add_prefix('idm_')
+
+                     
+
+                     #cols = [x for x in df.columns if x in idm_fields]
+
+                     #df = df[cols]
+
+                     df['unique_id'] = s.str.extract('(.+?).json', expand = True)[0]
+
+                    
+
+                     idm_data = idm_data.append(df,ignore_index = True)
+
+                     
+
+                 except Exception:
+
+                         print(f)
+
+                 i = i + 1
+
+end_time = datetime.datetime.today()
+
+print("Total execution time : ", end_time - start_time)
+
+    
