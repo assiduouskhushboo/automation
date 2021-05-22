@@ -1,0 +1,111 @@
+import pandas as pd
+
+import csv
+
+import json
+
+import datetime
+
+
+
+data = pd.read_csv("transaction_data.csv")
+
+
+
+selectedColumns =  data.columns   
+
+selectedColumns = [w.replace(' ', '') for w in selectedColumns]
+
+selectedColumns = [w.replace('#', '') for w in selectedColumns]
+
+selectedColumns = [w.replace('-', '') for w in selectedColumns]
+
+selectedColumns = [w.replace('/', '') for w in selectedColumns]
+
+data.columns = selectedColumns 
+
+
+
+transaction_fields = ['UniqueID','BillZip','BillCountry','BillEmail','ShipZip', 
+
+                      'ShipCountry','OrderTotal','DateofSale','CreditCardNumber', 
+
+                      'Currency', 'GatewayDescriptor','Type', 
+
+                      'CMBINFoundNotFoundinHistoricalchargebackdatabase',
+
+                      'BINCountryOrigin', 'IPCountryOrigin',
+
+                      'IPCountryVsBillingAddressMatchNoMatch', 
+
+                      'IPCityOrigin','IPZipCodeOrigin', 'IPCityVsBillingaddressMatchNoMatch',
+
+                      'IPZipCodeVsBillingaddressMatchNoMatch','EmailSyntaxanddomaincheckCorrectIncorrect',
+
+                      'EmailAuthenticitycheckYesNo','ShippingAddressVsBillingaddressMatchNotMatch',
+
+                      'PhonenumbermatchesCMprofileYesNo', 'MCC','MCCDisputedbyCMasperissuerdatabaseYesNo',
+
+                      'CMMCCpatternverificationasperissuerdatabaseFoundNotFound'] 
+
+                      
+
+idm_fields = ['idm_ED_29', 'idm_ED_49', 'idm_ED_78',  'idm_ED_90', 'idm_ED_97',
+
+               'idm_ED_110', 'idm_ED_502', 'idm_ED_504', 'idm_ED_507', 'idm_ED_509',
+
+               'idm_ED_512', 'idm_ED_514', 'idm_RA_1', 'idm_RA_2', 'idm_MM_1',
+
+               'idm_MM_2', 'idm_MM_3', 'idm_MM_4', 'idm_MM_5', 'idm_MM_6',
+
+               'idm_MM_7', 'idm_MM_10', 'idm_MM_11', 'idm_MM_13', 'idm_MM_14']
+
+
+
+telesign_fields = ['ts_phone_type', 'ts_phone_city', 'ts_phone_state', 'ts_phone_ZIP',
+
+                   'ts_phone_county', 'ts_phone_country_code', 'ts_phone_block_code',
+
+                   'ts_phone_carrier', 'ts_phone_risk_level', 'ts_phone_risk_score',
+
+                   'ts_phone_risk_recommendation']  
+
+                   
+
+dataf = data.to_dict(orient='records') 
+
+
+
+def read(i):
+
+    payload = dataf[i]
+
+    df = {}
+
+    rts = str(datetime.datetime.now()) 
+
+    df['requestTimestamp'] = rts
+
+    df['uniqueID'] = payload['UniqueID']
+
+    df['transactionData'] = {k: payload[k] for k in transaction_fields }
+
+    df['idmData'] = {k: payload[k] for k in idm_fields}
+
+    df['telesignData'] = {k: payload[k] for k in telesign_fields}
+
+    df1 = json.dumps(df, sort_keys=False, indent=4, separators=(',', ': '))
+
+    with open('C:/Users/QAM03191/cb_idm_ts_json/'+df['uniqueID']+'.json', "w") as f:
+
+        f.write(df1)
+
+        
+
+        
+
+i=0 
+
+for i in range(0,10):
+
+    read(i)
