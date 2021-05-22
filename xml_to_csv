@@ -1,0 +1,79 @@
+import pandas as pd
+
+import json,xmltodict
+
+
+
+telesgn = pd.read_csv("telesgn_XMLdata.csv",header = True)
+
+
+
+phone_type = []
+
+city = []
+
+state = []
+
+ZIP = []
+
+country_name = []
+
+country_code_ISO2 = []
+
+country_code_ISO3 = []
+
+carrier = []
+
+risk_level = []
+
+risk_recommendation = []
+
+risk_score = []
+
+
+
+
+
+for i in range(0,len(telesgn)):
+
+    xmlString = telesgn.iloc[i,0]
+
+    jsonString = json.dumps(xmltodict.parse(xmlString), indent=4,separators=(',', ': '))
+
+    #print(jsonString)
+
+#xmlString = '<response><reference_id>356C57AD3F800A1C90425935F4E65DB1</reference_id><resource_uri/><sub_resource>score</sub_resource><status><updated_on>2017-03-28T17:16:34.995147Z</updated_on><code>300</code><description>Transaction successfully completed</description></status><numbering><original><complete_phone_number>12016006758</complete_phone_number><country_code>1</country_code><phone_number>2016006758</phone_number></original><cleansing><call><country_code>1</country_code><phone_number>2016006758</phone_number><cleansed_code>100</cleansed_code><min_length>10</min_length><max_length>10</max_length></call><sms><country_code>1</country_code><phone_number>2016006758</phone_number><cleansed_code>100</cleansed_code><min_length>10</min_length><max_length>10</max_length></sms></cleansing></numbering><phone_type><code>2</code><description>MOBILE</description></phone_type><location><city>Jersey City</city><state>NJ</state><zip>07304</zip><metro_code>3640</metro_code><county>Hudson</county><country><name>United States</name><iso2>US</iso2><iso3>USA</iso3></country><coordinates><latitude>40.71755</latitude><longitude>-74.07336</longitude></coordinates><time_zone><name>America/New_York</name><utc_offset_min>-5</utc_offset_min><utc_offset_max>-5</utc_offset_max></time_zone></location><carrier><name>AT&amp;T Wireless</name></carrier><risk><level>low</level><recommendation>allow</recommendation><score>1</score></risk></response>'
+
+    telesgn_dict = json.loads(jsonString)
+
+    phone_type.append(telesgn_dict.get('response').get('phone_type').get('description'))
+
+    city.append(telesgn_dict.get('response').get('location').get('city'))
+
+    state.append(telesgn_dict.get('response').get('location').get('state'))
+
+    ZIP.append(telesgn_dict.get('response').get('location').get('zip'))
+
+    country_name.append(telesgn_dict.get('response').get('location').get('country').get('name'))
+
+    country_code_ISO2.append(telesgn_dict.get('response').get('location').get('country').get('iso2'))
+
+    country_code_ISO3.append(telesgn_dict.get('response').get('location').get('country').get('iso3'))
+
+    carrier.append(telesgn_dict.get('response').get('carrier').get('name'))
+
+    risk_level.append(telesgn_dict.get('response').get('risk').get('level'))
+
+    risk_recommendation.append(telesgn_dict.get('response').get('risk').get('recommendation'))
+
+    risk_score.append(telesgn_dict.get('response').get('risk').get('score'))
+
+
+
+
+
+df = pd.DataFrame([phone_type,city,state,ZIP,country_name,country_code_ISO2,country_code_ISO3,carrier,risk_level, risk_recommendation,risk_score]).T
+
+df.columns = ['phone_type', 'city','state','ZIP','country_name','country_code_ISO2','country_code_ISO3','carrier','risk_level','risk_recommendation','risk_score']
+
+df.to_csv("telesgn_response_output.csv")
