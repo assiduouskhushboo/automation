@@ -1,0 +1,37 @@
+import pandas as pd
+
+import json,xmltodict
+
+import os
+
+from fnmatch import fnmatch
+
+import datetime
+
+
+
+path = r'PATH-WHERE-XML-STRINGS-ARE-PLACED'
+
+
+
+files = os.listdir(path)
+
+#s = pd.Series(files)
+
+pattern = "*.xml"
+
+
+
+for f in files:
+
+    if fnmatch(f, pattern):
+
+        with open(f,encoding="utf8") as datafile:
+
+             xmlString = xmltodict.parse(datafile.read())
+
+             jsonString = json.dumps(xmlString, indent=4,sort_keys = False,separators = (',',':'))
+
+             with open('PATH-WHERE-FILES-NEEDS-TO-PLACED'+str(f.split('.')[0])+'.json', "w") as fi:
+
+                fi.write(jsonString)
